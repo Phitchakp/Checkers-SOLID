@@ -1,5 +1,5 @@
 # piece_factory.py
-from pieces import Man, King # This is okay, the factory is the one place that knows the concretions
+from pieces import Man, King # the factory is the one place that knows the concretions
 
 class PieceFactory:
     def create_piece(self, color, piece_type, position):
