@@ -1,16 +1,23 @@
 # match.py
-# from board import Board (We will inject the board now)
-# from player import Player
 
 class Match:
-    def __init__(self, board, players): # Dependencies are injected!
+    def __init__(self, board, players):
         self.board = board
         self.players = players
-        self.current_player_index = 0
+        self.current_player_index = 1
+        self.assign_pieces() # Call this to assign pieces to players at the start.
 
-    def start_game(self, ui_adapter): # Accept a UI adapter to handle input/output
+    def assign_pieces(self):
+        for r in range(8):
+            for c in range(8):
+                piece = self.board.get_piece_at((r, c))
+                if piece:
+                    for player in self.players:
+                        if player.color == piece.color:
+                            player.pieces.append(piece)
+
+    def start_game(self, ui_adapter):
         print("Starting Checkers game!")
-        ui_adapter.display(self.board)
         while True:
             current_player = self.players[self.current_player_index]
             ui_adapter.display(self.board, current_player)
@@ -19,13 +26,17 @@ class Match:
                 print(f"{current_player.color} cannot move. Game over.")
                 break
 
-            # Delegate the entire process of getting a move to the UI adapter.
             move_result = ui_adapter.get_move(self.board, current_player)
-            if move_result is None: # e.g., user quit
+            if move_result is None: # User typed "gg" to quit
+                print("Game ended by user.")
                 break
 
-            piece, destination = move_result
-            captured = self.board.move_piece(piece, destination)
+            piece, move_path = move_result
+            
+            # Handle single moves and multi-jumps
+            for dest_pos in move_path:
+                self.board.move_piece(piece, dest_pos)
+            
             self.switch_turn()
 
     def switch_turn(self):
